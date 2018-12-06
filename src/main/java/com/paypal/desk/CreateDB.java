@@ -23,7 +23,8 @@ public class CreateDB {
                     "  id serial unique," +
                     "  first_name text not null," +
                     "  last_name text not null," +
-                    "  balance real not null default 0);");
+                    "  balance real not null default 0"+
+                    "  primary key (id));");
             Result = s.execute();
             s = conn.prepareStatement("create table transactions (" +
                     "  id serial unique," +
