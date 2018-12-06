@@ -61,15 +61,28 @@ public class DbHelper {
      * @param userId id of the user in users table
      * @param amount double value of the amount to insert
      */
-    static void cashFlow(int userId, double amount) {
-        String sql = "update users set balance = balance + " + amount +" where id =" + userId + ";";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sql);
+    static String cashFlow(int userId, double amount) {
+        List<User> list = new ArrayList<>(listUsers());
+        String s;
+        boolean id = false;
+        for(User user : list) if(userId == user.getId()) id = true;
+        if(id){
+            try {
+                PreparedStatement statement = connection.prepareStatement("update users set balance = balance + ? where id = ?;");
+                statement.setDouble(1,amount);
+                statement.setInt(2, userId);
+                int result = statement.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            s = "Balance changed successfully.";
+            return s;
+        }else{
+            s = "Balance change is impossible.";
+            return s;
         }
+
     }
 
     /**
@@ -80,19 +93,38 @@ public class DbHelper {
      * @param userTo   target user id
      * @param amount   transaction amount
      */
-    static void transaction(int userFrom, int userTo, double amount) {
-        String sql_1 = "update users set balance = balance - " + amount +" where id =" + userFrom + ";";
-        String sql_2 = "update users set balance = balance + " + amount +" where id =" + userTo +";";
-        String sql_3 = "insert into transactions (user_from, user_to, transaction_amount) values ("
-                + userFrom + ", " + userTo + "," + amount + ")";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sql_1);
-            statement.execute(sql_2);
-            statement.execute(sql_3);
+    static String transaction(int userFrom, int userTo, double amount) {
+        List<User> list = new ArrayList<>(listUsers());
+        String s;
+        boolean from = false;
+        boolean to = false;
+        for(User user : list){
+            if(userFrom == user.getId() && amount <= user.getBalance()) from = true;
+            if(userTo == user.getId()) to = true;
+        }
+        if(from && to){
+            PreparedStatement statement;
+            String sql = "insert into transactions (user_from, user_to, transaction_amount) values ("
+                    + userFrom + ", " + userTo + "," + amount + ")";
+            try {
+                statement = connection.prepareStatement("update users set balance = case when id = ? then balance - ?" +
+                        "when id  = ? then balance + ? else balance end;");
+                statement.setInt(1,userFrom);
+                statement.setDouble(2,amount);
+                statement.setInt(3,userTo);
+                statement.setDouble(4,amount);
+                boolean result = statement.execute();
+                statement = connection.prepareStatement(sql);
+                boolean transaction = statement.execute();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            s = "Transaction successful";
+            return s;
+        }else{
+            s = "Transaction is impossible";
+            return s;
         }
     }
 
@@ -121,4 +153,5 @@ public class DbHelper {
             return null;
         }
     }
+
 }

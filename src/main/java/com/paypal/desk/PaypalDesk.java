@@ -14,6 +14,7 @@ public class PaypalDesk {
         System.out.println("Enter command");
 
         while (true) {
+            System.out.println("(B) -> Create DB");
             System.out.println("(C) -> Create user");
             System.out.println("(L) -> List users");
             System.out.println("(+) -> Cash in");
@@ -24,6 +25,9 @@ public class PaypalDesk {
             String command = scanner.nextLine();
 
             switch (command) {
+                case "B":
+                    createDB();
+                    break;
                 case "C":
                     createUser();
                     break;
@@ -43,6 +47,14 @@ public class PaypalDesk {
                     return;
             }
         }
+    }
+
+    private static void createDB() {
+       boolean b = CreateDB.createDB();
+       if(b == false)
+           System.out.println("DB created successfully");
+       else
+           System.out.println("Error while creating the DB");
     }
 
     private static void createUser() {
@@ -83,18 +95,18 @@ public class PaypalDesk {
         int userId = getUserIdFromConsole("User id: ");
         double amount = getAmountFromConsole();
 
-        DbHelper.cashFlow(userId, amount);
+        String s = DbHelper.cashFlow(userId, amount);
 
-        System.out.println("Cash in successful");
+        System.out.println(s);
     }
 
     private static void cashOut() {
         int userId = getUserIdFromConsole("User id: ");
         double amount = getAmountFromConsole();
 
-        DbHelper.cashFlow(userId, -amount);
+        String s = DbHelper.cashFlow(userId, -amount);
 
-        System.out.println("Cash out successful");
+        System.out.println(s);
     }
 
     private static void transaction() {
@@ -107,11 +119,10 @@ public class PaypalDesk {
 
         double amount = getAmountFromConsole();
 
-        DbHelper.transaction(
+        String s = DbHelper.transaction(
                 userFrom, userTo, amount
         );
-
-        System.out.println("Transaction successful");
+        System.out.println(s);
     }
 
 
