@@ -1,5 +1,6 @@
 package com.paypal.desk;
 
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Scanner;
@@ -14,9 +15,11 @@ public class PaypalDesk {
         System.out.println("Enter command");
 
         while (true) {
-            System.out.println("(B) -> Create DB");
+            System.out.println("(B) -> Create DB(If you have a database with the name \"paypal\"\n" +
+                    " it will be deleted and the eponymous empty one will be created.)");
             System.out.println("(C) -> Create user");
-            System.out.println("(L) -> List users");
+            System.out.println("(LU) -> List users");
+            System.out.println("(LT) -> List transactions");
             System.out.println("(+) -> Cash in");
             System.out.println("(-) -> Cash out");
             System.out.println("(T) -> Transaction");
@@ -31,8 +34,11 @@ public class PaypalDesk {
                 case "C":
                     createUser();
                     break;
-                case "L":
+                case "LU":
                     listUsers();
+                    break;
+                case "LT":
+                    listTransactions();
                     break;
                 case "+":
                     cashIn();
@@ -47,6 +53,16 @@ public class PaypalDesk {
                     return;
             }
         }
+    }
+
+    private static void listTransactions() {
+        List<Transaction> transactions = DbHelper.listTransaction();
+        if (transactions == null) return;
+
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction);
+        }
+
     }
 
     private static void createDB() {
@@ -95,18 +111,18 @@ public class PaypalDesk {
         int userId = getUserIdFromConsole("User id: ");
         double amount = getAmountFromConsole();
 
-        String s = DbHelper.cashFlow(userId, amount);
-
-        System.out.println(s);
+        int i = DbHelper.cashFlow(userId, amount);
+        if (i == 1) System.out.println("Balance successfully changed.");
+        else System.out.println("Balance change is impossible.");
     }
 
     private static void cashOut() {
         int userId = getUserIdFromConsole("User id: ");
         double amount = getAmountFromConsole();
 
-        String s = DbHelper.cashFlow(userId, -amount);
-
-        System.out.println(s);
+        int i = DbHelper.cashFlow(userId, -amount);
+        if (i == 1) System.out.println("Balance successfully changed.");
+        else System.out.println("Balance change is impossible.");
     }
 
     private static void transaction() {
@@ -119,9 +135,14 @@ public class PaypalDesk {
 
         double amount = getAmountFromConsole();
 
-        String s = DbHelper.transaction(
-                userFrom, userTo, amount
-        );
+        String s = null;
+        try {
+            s = DbHelper.transaction(
+                    userFrom, userTo, amount
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         System.out.println(s);
     }
 

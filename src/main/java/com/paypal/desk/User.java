@@ -1,5 +1,7 @@
 package com.paypal.desk;
 
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Scanner;
@@ -17,6 +19,8 @@ public class User {
         this.lastName = lastName;
         this.balance = balance;
     }
+
+
 
     public int getId() {
         return id;
@@ -64,7 +68,7 @@ public class User {
 
         private static Scanner scanner = new Scanner(System.in);
 
-        public static void main(String[] args) {
+        public static void main(String[] args) throws SQLException {
 
             System.out.println("Welcome to paypal");
             System.out.println("Enter command");
@@ -153,7 +157,7 @@ public class User {
             System.out.println("Cash out successful");
         }
 
-        private static void transaction() {
+        private static void transaction() throws SQLException {
             int userFrom = getUserIdFromConsole(
                     "User id: "
             );
